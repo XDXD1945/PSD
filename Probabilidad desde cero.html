@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Probabilidad desde cero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F5FA;--sf:#fff;--ink:#14213D;--mut:#55617a;--a:#0E9F8E;--b:#6B4EF0;--c:#E39200;--red:#E5484D;--blu:#3E7BFA;--line:#D9E0EC;--ok:#17924f;--bad:#d03b3b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0F1626;--sf:#17203A;--ink:#E8EDF8;--mut:#9AA6C0;--a:#2FD0BD;--b:#9C86FF;--c:#FFC247;--line:#2A3558;--ok:#4cd68a;--bad:#ff7b7b}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0F1626;--sf:#17203A;--ink:#E8EDF8;--mut:#9AA6C0;--a:#2FD0BD;--b:#9C86FF;--c:#FFC247;--line:#2A3558;--ok:#4cd68a;--bad:#ff7b7b}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "Atkinson Hyperlegible",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;margin:0 0 .5em}
+h1{font-size:clamp(2.6rem,8vw,5.2rem);font-weight:800;letter-spacing:-.03em}
+h2{font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:800;letter-spacing:-.02em}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0 0 1em;max-width:68ch}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:.25rem;overflow-x:auto;padding:.5rem 1rem}
+nav a{color:var(--ink);text-decoration:none;padding:.4rem .8rem;border-radius:99px;white-space:nowrap;font-weight:700;font-size:.92rem}
+nav a:hover,nav a:focus-visible{background:var(--line);outline:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+section{max-width:1040px;margin:0 auto;padding:4.5rem 1.25rem 1rem}
+.card{background:var(--sf);border:1px solid var(--line);border-radius:18px;padding:1.4rem;margin:1.2rem 0}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.f{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;background:var(--bg);border-left:5px solid var(--a);padding:.7rem 1rem;border-radius:8px;margin:.6rem 0;overflow-x:auto;white-space:nowrap}
+.f.v{border-color:var(--b)}.f.o{border-color:var(--c)}
+.def{border-left:5px solid var(--c);padding:.2rem 1rem;background:var(--sf);border-radius:0 12px 12px 0;margin:1rem 0}
+button,select{font:inherit;font-weight:700;border:2px solid var(--ink);background:var(--sf);color:var(--ink);border-radius:12px;padding:.5rem 1rem;cursor:pointer}
+button:hover{background:var(--ink);color:var(--bg)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+button.p{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+input[type=range]{accent-color:var(--b);width:150px}
+.hero{padding-top:3rem}
+.hero .die{font-size:7rem;line-height:1;color:var(--b);width:1.1em;text-align:center}
+.die.roll{animation:rl .45s}
+@keyframes rl{0%{transform:rotate(0) scale(.7)}60%{transform:rotate(300deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
+.bars{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem;height:200px;align-items:end;position:relative;margin:1rem 0 .3rem}
+.bar{background:var(--a);border-radius:8px 8px 0 0;min-height:2px;transition:height .35s;position:relative}
+.bar span{position:absolute;top:-1.5rem;left:0;right:0;text-align:center;font-size:.8rem;font-weight:700}
+.ref{position:absolute;left:0;right:0;border-top:2px dashed var(--c);pointer-events:none}
+.lbl{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem;text-align:center;font-weight:700}
+.scale{height:14px;border-radius:9px;background:linear-gradient(90deg,var(--bad),var(--c),var(--ok));position:relative;margin:2.2rem 0 2.6rem}
+.scale i{position:absolute;top:18px;transform:translateX(-50%);font-style:normal;font-size:.8rem;text-align:center;line-height:1.25;width:90px}
+.scale i::before{content:"";position:absolute;left:50%;top:-24px;height:20px;border-left:2px solid var(--ink)}
+.balls{display:flex;flex-wrap:wrap;gap:.35rem;margin:.8rem 0;min-height:44px}
+.ball{width:34px;height:34px;border-radius:50%;transition:transform .25s}
+.ball.hit{transform:scale(1.5);box-shadow:0 0 0 4px var(--c)}
+.faces{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin:1rem 0}
+.face{aspect-ratio:1;display:grid;place-items:center;border-radius:14px;border:2px solid var(--line);font:800 2.2rem "Bricolage Grotesque";background:var(--sf);transition:.3s}
+.face.A{background:var(--a);color:#fff;border-color:var(--a)}
+.face.B{background:var(--b);color:#fff;border-color:var(--b)}
+.face.AB{background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);color:#fff;border-color:var(--c);box-shadow:0 0 0 3px var(--c)}
+.face.N{opacity:.45}
+svg{max-width:100%;height:auto;display:block}
+svg text{fill:var(--ink);font-family:"Bricolage Grotesque",sans-serif}
+.edge{stroke:var(--line);stroke-width:2.5;fill:none}
+.edge.on{stroke:var(--c);stroke-width:5;stroke-dasharray:400;animation:dr .8s forwards}
+@keyframes dr{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+.leaf{cursor:pointer}
+.leaf rect{fill:var(--sf);stroke:var(--line);stroke-width:2;rx:10}
+.leaf.on rect{stroke:var(--c);stroke-width:4}
+.opt{display:block;width:100%;text-align:left;margin:.4rem 0}
+.opt.ok{background:var(--ok);border-color:var(--ok);color:#fff}.opt.no{background:var(--bad);border-color:var(--bad);color:#fff}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:.7rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.wrap{overflow-x:auto}
+.tag{display:inline-block;padding:.1rem .6rem;border-radius:99px;font-weight:700;font-size:.85rem;background:var(--a);color:#fff}.tag.b{background:var(--b)}.tag.c{background:var(--c);color:#14213D}
+footer{text-align:center;color:var(--mut);padding:3rem 1rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<nav aria-label="Secciones"><a href="#inicio">Inicio</a><a href="#basico">¿Qué es?</a><a href="#aditiva">Regla aditiva</a><a href="#multi">Regla multiplicativa</a><a href="#arbol">Árboles</a><a href="#quiz">Practica</a><a href="#resumen">Resumen</a></nav>
+
+<section id="inicio" class="hero">
+<h1>Probabilidad,<br>desde cero.</h1>
+<p style="font-size:1.2rem">La probabilidad es un número que mide qué tan posible es que algo pase. No necesitas saber nada antes: aquí cada idea se explica con una fórmula, un dibujo y algo que puedes mover tú mismo. Empecemos con un dado.</p>
+<div class="card">
+<div class="row"><div class="die" id="die" aria-live="polite">⚀</div>
+<div><strong>Lanza el dado muchas veces.</strong><br><span style="color:var(--mut)">Total de lanzamientos: <b id="tot">0</b></span></div></div>
+<div class="bars" id="bars"></div>
+<div class="lbl"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div></div>
+<div class="row" style="margin-top:1rem">
+<button class="p" data-n="1">Lanzar 1</button><button data-n="10">×10</button><button data-n="100">×100</button><button data-n="1000">×1000</button><button id="reset">Reiniciar</button></div>
+<p style="margin-top:1rem;color:var(--mut)">La línea punteada es 1/6 ≈ 16,7 %, lo que “debería” salir en cada cara. Con pocos lanzamientos las barras son desparejas; con muchos se acercan a la línea. A esto se le llama <b>ley de los grandes números</b>: la probabilidad no predice un lanzamiento, describe lo que pasa a la larga.</p>
+</div>
+</section>
+
+<section id="basico">
+<h2>1. ¿Qué es la probabilidad?</h2>
+<div class="grid">
+<div class="def"><h3>Experimento</h3>Una acción con resultado incierto: lanzar un dado, sacar una carta.</div>
+<div class="def"><h3>Espacio muestral</h3>Todos los resultados posibles. Dado: {1, 2, 3, 4, 5, 6}.</div>
+<div class="def"><h3>Evento</h3>Lo que te interesa que ocurra. “Que salga par” = {2, 4, 6}.</div>
+</div>
+<p>Si todos los resultados son igual de probables, la probabilidad de un evento es una simple división:</p>
+<div class="f">P(A) = casos favorables ÷ casos posibles</div>
+<p>Ejemplo: P(par) = 3 ÷ 6 = 0,5 = 50 %. Siempre vale entre <b>0</b> (imposible) y <b>1</b> (seguro):</p>
+<div class="scale" aria-hidden="true"><i style="left:0">0 · 0 %<br>Imposible</i><i style="left:50%">0,5 · 50 %<br>Igual de probable</i><i style="left:100%">1 · 100 %<br>Seguro</i></div>
+<div class="card">
+<h3>Pruébalo: la bolsa de bolitas</h3>
+<p>Una bolsa tiene bolitas rojas y azules. Cambia las cantidades y saca una al azar.</p>
+<div class="row"><label>Rojas <b id="rv">3</b> <input type="range" id="rs" min="1" max="10" value="3"></label><label>Azules <b id="bv">5</b> <input type="range" id="bs" min="1" max="10" value="5"></label></div>
+<div class="balls" id="bag" aria-label="Bolitas en la bolsa"></div>
+<div class="f" id="bagf"></div>
+<div class="f v" id="bagc"></div>
+<div class="row"><button class="p" id="draw">Sacar una (devolviéndola)</button><button id="draw50">Sacar 50 veces</button><span id="bagr" style="color:var(--mut)">Aún no has sacado ninguna.</span></div>
+<p style="margin-top:1rem"><b>Complemento:</b> lo contrario de un evento. Si P(roja) es una parte del total, P(no roja) es todo lo demás, porque entre ambos suman 1.</p>
+</div>
+</section>
+
+<section id="aditiva">
+<h2>2. Regla aditiva: “A <u>o</u> B”</h2>
+<p>Se usa cuando preguntas por <b>uno u otro</b> (o ambos). Ejemplo cotidiano: “¿cuál es la probabilidad de que mi equipo gane <i>o</i> empate?”. Antes hay que saber si los eventos pueden pasar a la vez.</p>
+<div class="grid">
+<div class="card"><span class="tag">Mutuamente excluyentes</span><p style="margin-top:.6rem">No pueden ocurrir juntos. En un dado: “sale 1” y “sale 6”. Solo se suman.</p><div class="f">P(A o B) = P(A) + P(B)</div></div>
+<div class="card"><span class="tag b">No excluyentes</span><p style="margin-top:.6rem">Pueden ocurrir juntos. “Par” y “mayor que 4” comparten el 6. Si solo sumas, cuentas el 6 dos veces, así que lo restas una vez.</p><div class="f v">P(A o B) = P(A) + P(B) − P(A y B)</div></div>
+</div>
+<div class="card">
+<h3>Elige dos eventos en el dado</h3>
+<div class="row"><label><span class="tag">A</span> <select id="ea"></select></label><label><span class="tag b">B</span> <select id="eb"></select></label></div>
+<div class="faces" id="faces"></div>
+<div class="grid" style="align-items:center"><svg id="venn" viewBox="0 0 320 200" role="img" aria-label="Diagrama de Venn"></svg><div><div class="f o" id="addtype"></div><div class="f" id="addf" style="white-space:normal"></div></div></div>
+</div>
+<p><b>Tip:</b> las caras pintadas con ambos colores son la intersección. Si no hay ninguna, los eventos son excluyentes y los círculos del diagrama aparecen separados.</p>
+</section>
+
+<section id="multi">
+<h2>3. Regla multiplicativa: “A <u>y</u> luego B”</h2>
+<p>Se usa cuando preguntas por <b>que ocurran los dos</b>. Ejemplo: “¿probabilidad de sacar cara en una moneda <i>y</i> un 6 en un dado?”. Aquí multiplicas, y la clave es saber si el primer resultado cambia al segundo.</p>
+<div class="grid">
+<div class="card"><span class="tag">Independientes</span><p style="margin-top:.6rem">Lo que pasa en A <b>no cambia</b> la probabilidad de B. Moneda y dado, o devolver la bolita a la bolsa.</p><div class="f">P(A y B) = P(A) · P(B)</div><p>Ej.: ½ · ⅙ = 1/12</p></div>
+<div class="card"><span class="tag b">Dependientes</span><p style="margin-top:.6rem">Lo que pasa en A <b>sí cambia</b> a B. Sacar una carta y <i>no</i> devolverla: el mazo ahora tiene una menos.</p><div class="f v">P(A y B) = P(A) · P(B | A)</div><p>P(B | A) se lee “probabilidad de B <i>dado que</i> ya pasó A”.</p></div>
+</div>
+<div class="def"><b>Prueba rápida:</b> pregúntate “¿saber que A pasó me da pistas sobre B?”. Si no, son independientes. Si sí, son dependientes.</div>
+</section>
+
+<section id="arbol">
+<h2>4. Diagrama de árbol</h2>
+<p>El árbol dibuja todos los caminos posibles. Cada rama lleva su probabilidad; <b>a lo largo de un camino se multiplica</b>, y <b>entre caminos distintos se suma</b>. Saca dos bolitas, una tras otra, y mira cómo cambia el árbol.</p>
+<div class="card">
+<div class="row"><label><span class="ball" style="display:inline-block;width:14px;height:14px;background:var(--red)"></span> Rojas <b id="tr">3</b> <input type="range" id="trs" min="1" max="8" value="3"></label><label><span class="ball" style="display:inline-block;width:14px;height:14px;background:var(--blu)"></span> Azules <b id="tb">2</b> <input type="range" id="tbs" min="1" max="8" value="2"></label>
+<select id="mode"><option value="0">Con reposición (independientes)</option><option value="1" selected>Sin reposición (dependientes)</option></select></div>
+<svg id="tree" viewBox="0 0 660 360" role="img" aria-label="Diagrama de árbol de dos extracciones" style="margin-top:1rem"></svg>
+<p style="color:var(--mut)">Toca una hoja (cuadro a la derecha) para ver su camino.</p>
+<div class="f o" id="tres" style="white-space:normal"></div>
+<div class="f" id="tnote" style="white-space:normal"></div>
+</div>
+<div class="card"><h3>Ejemplo cotidiano: regla aditiva + multiplicativa juntas</h3><p>“¿Probabilidad de sacar dos bolitas del <b>mismo color</b>?” Hay dos caminos que sirven: rojo-rojo <i>o</i> azul-azul. Multiplicas dentro de cada camino y luego sumas los dos:</p><div class="f" id="same" style="white-space:normal"></div></div>
+</section>
+
+<section id="quiz">
+<h2>5. Practica</h2>
+<p>Elige la respuesta y lee la explicación.</p>
+<div id="qz"></div>
+<div class="row"><b id="score">Aciertos: 0 de 0</b></div>
+</section>
+
+<section id="resumen">
+<h2>6. Hoja de resumen</h2>
+<div class="wrap"><table>
+<tr><th>Idea</th><th>Fórmula</th><th>Cuándo y ejemplo</th></tr>
+<tr><td>Probabilidad</td><td>P(A) = favorables ÷ posibles</td><td>Resultados igual de probables. Dado par: 3/6.</td></tr>
+<tr><td>Complemento</td><td>P(no A) = 1 − P(A)</td><td>“No pasa” es lo opuesto. Llover 30 % → no llover 70 %.</td></tr>
+<tr><td>Aditiva, excluyentes</td><td>P(A o B) = P(A) + P(B)</td><td>No pueden pasar juntos. Sacar 1 o 6: 1/6 + 1/6.</td></tr>
+<tr><td>Aditiva, no excluyentes</td><td>P(A o B) = P(A) + P(B) − P(A y B)</td><td>Pueden pasar juntos. Par o mayor que 4: 3/6 + 2/6 − 1/6.</td></tr>
+<tr><td>Multiplicativa, independientes</td><td>P(A y B) = P(A) · P(B)</td><td>Uno no afecta al otro. Moneda y dado.</td></tr>
+<tr><td>Multiplicativa, dependientes</td><td>P(A y B) = P(A) · P(B | A)</td><td>El primero cambia el segundo. Cartas sin devolver.</td></tr>
+<tr><td>Árbol</td><td>Multiplica por el camino, suma entre caminos</td><td>Todas las hojas suman 1.</td></tr>
+</table></div>
+<div class="def"><b>Error común:</b> confundir “excluyentes” con “independientes”. Excluyentes significa que no pueden pasar a la vez (y por eso se saben ligados: si pasa uno, el otro seguro no). Independientes significa que uno no afecta al otro. Son ideas distintas.</div>
+</section>
+<footer>Probabilidad desde cero. Experimenta, cambia los números y observa qué pasa.</footer>
+
+<script>
+const $=s=>document.querySelector(s),pc=x=>(x*100).toFixed(1).replace(".",",")+" %";
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const fr=(n,d)=>n===0?"0":(g=>d/g===1?n/g:`${n/g}/${d/g}`)(gcd(n,d));
+/* HERO */
+let cnt=[0,0,0,0,0,0],tot=0;const bars=$("#bars");
+bars.innerHTML='<div class="ref" style="bottom:41.7%"></div>'+[0,1,2,3,4,5].map(()=>'<div class="bar"><span></span></div>').join("");
+function paint(){const B=bars.querySelectorAll(".bar");cnt.forEach((c,i)=>{const f=tot?c/tot:0;B[i].style.height=Math.min(f/0.4,1)*100+"%";B[i].firstChild.textContent=tot?(f*100).toFixed(1)+"%":""});$("#tot").textContent=tot}
+document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{let k=0;for(let i=+b.dataset.n;i>0;i--){k=Math.floor(Math.random()*6);cnt[k]++;tot++}const d=$("#die");d.textContent="⚀⚁⚂⚃⚄⚅"[k];d.classList.remove("roll");void d.offsetWidth;d.classList.add("roll");paint()});
+$("#reset").onclick=()=>{cnt=[0,0,0,0,0,0];tot=0;$("#die").textContent="⚀";paint()};paint();
+/* BOLSA */
+let dr=0,dn=0;
+function bag(){const r=+$("#rs").value,b=+$("#bs").value,n=r+b;$("#rv").textContent=r;$("#bv").textContent=b;
+$("#bag").innerHTML=Array.from({length:n},(_,i)=>`<div class="ball" style="background:var(${i<r?"--red":"--blu"})"></div>`).join("");
+$("#bagf").textContent=`P(roja) = ${r} ÷ ${n} = ${fr(r,n)} = ${pc(r/n)}`;
+$("#bagc").textContent=`P(no roja) = 1 − ${fr(r,n)} = ${b} ÷ ${n} = ${pc(b/n)}`;dr=0;dn=0;$("#bagr").textContent="Aún no has sacado ninguna."}
+function pull(k){const r=+$("#rs").value,n=r+ +$("#bs").value;let last=0;for(let i=0;i<k;i++){last=Math.floor(Math.random()*n);dn++;if(last<r)dr++}
+const balls=$("#bag").children;balls[last].classList.add("hit");setTimeout(()=>balls[last]&&balls[last].classList.remove("hit"),500);
+$("#bagr").textContent=`Sacaste ${dr} rojas en ${dn} intentos (${pc(dr/dn)}). Teórico: ${pc(r/n)}.`}
+$("#rs").oninput=bag;$("#bs").oninput=bag;$("#draw").onclick=()=>pull(1);$("#draw50").onclick=()=>pull(50);bag();
+/* ADITIVA */
+const EV={"Par":[2,4,6],"Impar":[1,3,5],"Mayor que 4":[5,6],"Menor que 3":[1,2],"Múltiplo de 3":[3,6],"Primo":[2,3,5]};
+for(const s of ["#ea","#eb"])$(s).innerHTML=Object.keys(EV).map(k=>`<option>${k}</option>`).join("");
+$("#eb").selectedIndex=2;
+function add(){const A=EV[$("#ea").value],B=EV[$("#eb").value],I=A.filter(x=>B.includes(x)),oA=A.filter(x=>!B.includes(x)),oB=B.filter(x=>!A.includes(x)),N=[1,2,3,4,5,6].filter(x=>!A.includes(x)&&!B.includes(x));
+$("#faces").innerHTML=[1,2,3,4,5,6].map(x=>`<div class="face ${I.includes(x)?"AB":oA.includes(x)?"A":oB.includes(x)?"B":"N"}">${x}</div>`).join("");
+const ex=I.length===0,t=A.length+B.length-I.length;
+$("#addtype").innerHTML=ex?"Son mutuamente excluyentes: no comparten caras.":`No son excluyentes: comparten ${I.join(", ")}.`;
+$("#addf").innerHTML=ex?`P(A o B) = ${A.length}/6 + ${B.length}/6 = <b>${t}/6</b> = ${pc(t/6)}`:`P(A o B) = ${A.length}/6 + ${B.length}/6 − ${I.length}/6 = <b>${t}/6</b> = ${pc(t/6)}`;
+const ax=ex?95:125,bx=ex?225:195,L=a=>a.join(" ");
+$("#venn").innerHTML=`<circle cx="${ax}" cy="95" r="70" fill="var(--a)" fill-opacity=".35" stroke="var(--a)" stroke-width="3"/><circle cx="${bx}" cy="95" r="70" fill="var(--b)" fill-opacity=".35" stroke="var(--b)" stroke-width="3"/>
+<text x="${ex?95:90}" y="${ex?100:100}" text-anchor="middle" font-size="16" font-weight="700">${L(oA)}</text><text x="${ex?225:230}" y="100" text-anchor="middle" font-size="16" font-weight="700">${L(oB)}</text>${ex?"":`<text x="160" y="100" text-anchor="middle" font-size="16" font-weight="800">${L(I)}</text>`}
+<text x="${ax-40}" y="22" font-size="14" font-weight="800" fill="var(--a)" style="fill:var(--a)">A</text><text x="${bx+30}" y="22" font-size="14" font-weight="800" style="fill:var(--b)">B</text><text x="160" y="193" text-anchor="middle" font-size="13" style="fill:var(--mut)">Fuera: ${L(N)||"nada"}</text>`}
+$("#ea").onchange=add;$("#eb").onchange=add;add();
+/* ARBOL */
+let sel="RR";
+function tree(){const r=+$("#trs").value,b=+$("#tbs").value,n=r+b,m=+$("#mode").value;$("#tr").textContent=r;$("#tb").textContent=b;
+const d2=m?n-1:n,P={R:[r,n],B:[b,n]},Q={RR:[m?r-1:r,d2],RB:[b,d2],BR:[r,d2],BB:[m?b-1:b,d2]};
+const lf={RR:[P.R,Q.RR],RB:[P.R,Q.RB],BR:[P.B,Q.BR],BB:[P.B,Q.BB]},Y={RR:45,RB:135,BR:225,BB:315},Cl={R:"--red",B:"--blu"};
+let s=`<g>`,t=`<g>`;
+const ed=(x1,y1,x2,y2,on,tx,mx,my)=>`<path class="edge ${on?"on":""}" d="M${x1} ${y1}C${(x1+x2)/2} ${y1} ${(x1+x2)/2} ${y2} ${x2} ${y2}"/><text x="${mx}" y="${my}" text-anchor="middle" font-size="15" font-weight="700" style="paint-order:stroke;stroke:var(--sf);stroke-width:5px">${tx}</text>`;
+s+=ed(50,180,250,90,sel[0]=="R","",150,120).replace(/<text.*<\/text>/,`<text x="145" y="118" text-anchor="middle" font-size="15" font-weight="700" style="paint-order:stroke;stroke:var(--sf);stroke-width:5px">${fr(...P.R)}</text>`);
+s+=ed(50,180,250,270,sel[0]=="B",0,145,255).replace(/<text.*<\/text>/,`<text x="145" y="255" text-anchor="middle" font-size="15" font-weight="700" style="paint-order:stroke;stroke:var(--sf);stroke-width:5px">${fr(...P.B)}</text>`);
+for(const k in lf){const y1=k[0]=="R"?90:270,on=sel==k,q=lf[k][1];
+s+=`<path class="edge ${on?"on":""}" d="M250 ${y1}C330 ${y1} 330 ${Y[k]} 410 ${Y[k]}"/><text x="335" y="${(y1+Y[k])/2+(Y[k]<y1?-6:14)}" text-anchor="middle" font-size="15" font-weight="700" style="paint-order:stroke;stroke:var(--sf);stroke-width:5px">${fr(...q)}</text>`}
+s+=`<circle cx="50" cy="180" r="14" fill="var(--ink)"/><circle cx="250" cy="90" r="18" fill="var(--red)"/><circle cx="250" cy="270" r="18" fill="var(--blu)"/>`;
+for(const k in lf){const num=lf[k][0][0]*lf[k][1][0],den=lf[k][0][1]*lf[k][1][1];
+s+=`<g class="leaf ${sel==k?"on":""}" data-k="${k}" tabindex="0" role="button" aria-label="Camino ${k}"><circle cx="410" cy="${Y[k]}" r="14" fill="var(${Cl[k[1]]})"/><rect x="435" y="${Y[k]-22}" width="215" height="44"/><text x="445" y="${Y[k]+6}" font-size="16" font-weight="700">${k[0]},${k[1]}  →  ${fr(num,den)} = ${pc(num/den)}</text></g>`}
+$("#tree").innerHTML=s+"</g>";
+const nm={R:"roja",B:"azul"},k=sel,[a,c]=lf[k],num=a[0]*c[0],den=a[1]*c[1];
+$("#tres").innerHTML=`Camino ${nm[k[0]]} y luego ${nm[k[1]]}: <b>${fr(...a)} × ${fr(...c)} = ${fr(num,den)}</b> = ${pc(num/den)}`;
+$("#tnote").textContent=m?`Sin reposición: la bolsa queda con ${n-1} bolitas, así que la segunda rama cambia según lo que salió primero. Eso son eventos dependientes: P(B | A) ≠ P(B).`:`Con reposición: la bolsa vuelve a tener ${n} bolitas, así que la segunda rama es igual sin importar lo primero. Eso son eventos independientes: P(B | A) = P(B).`;
+const sm=(lf.RR[0][0]*lf.RR[1][0])*(lf.BB[0][1]*lf.BB[1][1])+(lf.BB[0][0]*lf.BB[1][0])*(lf.RR[0][1]*lf.RR[1][1]),sd=lf.RR[0][1]*lf.RR[1][1]*lf.BB[0][1]*lf.BB[1][1];
+$("#same").innerHTML=`P(mismo color) = (${fr(...lf.RR[0])} × ${fr(...lf.RR[1])}) + (${fr(...lf.BB[0])} × ${fr(...lf.BB[1])}) = <b>${pc(sm/sd)}</b>`;
+document.querySelectorAll(".leaf").forEach(e=>{e.onclick=()=>{sel=e.dataset.k;tree()};e.onkeydown=ev=>{if(ev.key=="Enter"||ev.key==" "){ev.preventDefault();sel=e.dataset.k;tree()}}})}
+for(const i of ["#trs","#tbs","#mode"])$(i).oninput=tree;tree();
+/* QUIZ */
+const Q=[
+["Lanzas una moneda y luego un dado. ¿Cómo son estos eventos?",["Independientes","Dependientes","Excluyentes"],0,"El resultado de la moneda no influye en el dado."],
+["Sacas dos cartas de un mazo sin devolver la primera. ¿Cómo son?",["Independientes","Dependientes","Excluyentes"],1,"Al quitar una carta, el mazo cambia y la segunda probabilidad también."],
+["En un dado, “sale 2” y “sale 5” ¿son mutuamente excluyentes?",["Sí, no pueden pasar juntos","No, se pueden combinar"],0,"Un solo lanzamiento da un solo número, así que nunca ocurren a la vez."],
+["P(par o mayor que 4) en un dado es…",["5/6","4/6","3/6"],1,"Par: 3/6, mayor que 4: 2/6, ambos (el 6): 1/6. Entonces 3/6 + 2/6 − 1/6 = 4/6."],
+["Bolsa con 2 rojas y 2 azules. ¿P(roja y luego roja) sin devolver?",["1/4","1/6","1/2"],1,"Primera: 2/4. Segunda: 1/3 (queda 1 roja de 3). Multiplicas: 2/4 × 1/3 = 2/12 = 1/6."]];
+let ok=0,an=0;
+$("#qz").innerHTML=Q.map((q,i)=>`<div class="card"><h3>${q[0]}</h3>${q[1].map((o,j)=>`<button class="opt" data-q="${i}" data-j="${j}">${o}</button>`).join("")}<p class="why" style="display:none;margin:.6rem 0 0"></p></div>`).join("");
+document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const c=b.parentElement;if(c.dataset.done)return;c.dataset.done=1;const q=Q[b.dataset.q],g=+b.dataset.j==q[2];an++;if(g)ok++;
+b.classList.add(g?"ok":"no");if(!g)c.querySelectorAll(".opt")[q[2]].classList.add("ok");const w=c.querySelector(".why");w.style.display="block";w.textContent=(g?"¡Correcto! ":"No exactamente. ")+q[3];$("#score").textContent=`Aciertos: ${ok} de ${an}`});
+</script>
+</body>
+</html>
